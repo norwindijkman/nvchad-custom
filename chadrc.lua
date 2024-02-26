@@ -12,7 +12,7 @@ M.ui = {
   hl_add = highlights.add,
   tabufline = {
     lazyload = false
-  }
+  },
 }
 
 M.plugins = "custom.plugins"

@@ -5,16 +5,6 @@
 --   pattern = "*",
 --   command = "tabdo wincmd =",
 --- Set the default register for delete, change, etc., to the '+' (system clipboard)
---
-
--- Quickly create a note
-function Create_date_file()
-  local date_str = os.date "%Y-%m-%d"
-  local file_path = "~/softw/penguin/notes/note-" .. date_str .. ".md" -- Change the directory as needed
-  local command = "edit " .. file_path
-  vim.api.nvim_command(command)
-end
-vim.api.nvim_set_keymap("n", "<Leader>cn", ":lua Create_date_file()<CR>", { noremap = true, silent = true })
 
 -- Set line wrap on
 vim.wo.wrap = false
@@ -23,30 +13,19 @@ function ToggleWrap()
   vim.wo.wrap = not wrap
 end
 vim.api.nvim_set_keymap("n", "<leader>l", ":lua ToggleWrap()<CR>", { noremap = true, silent = true })
+vim.g.indent_blankline_char = ""
+-- vim.cmd([[IndentBlanklineRefresh]])
 
 -- Turn line numbers off
 vim.wo.number = false
 
--- nvim-tree live grep
-function GrepInNvimTreeFolder()
-  local nimvTree = require "nvim-tree.api"
-  local node = nimvTree.tree.get_node_under_cursor()
-  local path
-  if node and node.type == "directory" then
-    path = node.absolute_path
-  elseif node and node.type == "file" then
-    path = vim.fn.fnamemodify(node.absolute_path, ":h")
-  end
-  if path then
-    require("telescope.builtin").live_grep { search_dirs = { path } }
-  end
-end
+-- Disable swap files
+vim.opt.swapfile = false
 
--- Bind the function to a key
-vim.api.nvim_set_keymap("n", "<leader>pp", ":lua GrepInNvimTreeFolder()<CR>", { noremap = true, silent = true })
+vim.schedule(function()
+  vim.opt.showtabline = 0
+end)
 
-vim.g.indent_blankline_char = ""
--- vim.cmd([[IndentBlanklineRefresh]])
 
 -- Scroll faster
 vim.api.nvim_set_keymap("n", "<A-j>", "4j", { noremap = true, silent = true })
@@ -59,21 +38,34 @@ vim.api.nvim_set_keymap("n", "<C-A-k>", "16k", { noremap = true, silent = true }
 vim.api.nvim_set_keymap("v", "<C-A-j>", "16j", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("v", "<C-A-k>", "16k", { noremap = true, silent = true })
 
-vim.schedule(function()
-  vim.opt.showtabline = 0
-end)
 
-
-
-
-function AddToRecentFiles()
-  local filePath = vim.fn.expand('%:p')
-  local dateCmd = "date --iso-8601=seconds"
-  local gioCmd = "gio set -t string " .. filePath .. " metadata::recent-info $(" .. dateCmd .. ")"
-  vim.fn.system(gioCmd)
+-- Quickly create a note
+local function create_date_file()
+  local date_str = os.date "%Y-%m-%d"
+  local file_path = "~/softw/penguin/notes/note-" .. date_str .. ".md" -- Change the directory as needed
+  local command = "edit " .. file_path
+  vim.api.nvim_command(command)
 end
+vim.api.nvim_create_user_command('CreateDateFile', create_date_file, {})
+vim.api.nvim_set_keymap("n", "<Leader>cn", "<cmd>CreateDateFile<CR>", { noremap = true, silent = true })
 
-vim.api.nvim_create_user_command('SR', AddToRecentFiles, {})
+
+-- nvim-tree live grep
+local function grep_in_nvim_tree_folder()
+  local nimvTree = require "nvim-tree.api"
+  local node = nimvTree.tree.get_node_under_cursor()
+  local path
+  if node and node.type == "directory" then
+    path = node.absolute_path
+  elseif node and node.type == "file" then
+    path = vim.fn.fnamemodify(node.absolute_path, ":h")
+  end
+  if path then
+    require("telescope.builtin").live_grep { search_dirs = { path } }
+  end
+end
+vim.api.nvim_create_user_command('GrepInNvimTreeFolder', grep_in_nvim_tree_folder, {})
+vim.api.nvim_set_keymap("n", "<leader>pp", "<cmd>GrepInNvimTreeFolder<CR>", { noremap = true, silent = true })
 
 local function make_recent()
   local filepath = vim.fn.expand('%:p')
@@ -101,13 +93,10 @@ local function make_recent()
   local file = io.open(recently_used_file, "r+")
   if file then
       local content = file:read("*all")
-      
       -- Check if the bookmark already exists
       local escaped_uri = uri:gsub("([^%w])", "%%%1")
       local pattern = '<bookmark href="' .. escaped_uri .. '"[^>]*>.-</bookmark>'
       local exists = content:match(pattern)
-
-      -- print(pattern, exists)
 
       if exists then
           -- Update the existing bookmark
@@ -124,12 +113,10 @@ local function make_recent()
       print("Error: Unable to open recently-used.xbel")
   end
 end
-
-vim.api.nvim_create_user_command('MakeRecent', make_recent, {})
 vim.api.nvim_create_user_command('MR', make_recent, {})
 
 -- Toggle nvim-tree width between wide / thin view
-function toggleNvimTreeWidth()
+local function toggle_nvim_tree_width()
   local view = require('nvim-tree.view')
   local standard_width = 30
   local wide_width = 60
@@ -140,21 +127,29 @@ function toggleNvimTreeWidth()
     view.resize(standard_width)
   end
 end
+vim.api.nvim_create_user_command('ToggleNvimTreeWidth', toggle_nvim_tree_width, {})
+vim.api.nvim_set_keymap('n', '<Leader>tw', '<cmd>ToggleNvimTreeWidth<CR>', { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<Leader>tw', '<cmd>lua toggleNvimTreeWidth()<CR>', { noremap = true, silent = true })
-
-local function goToNextFileInDir()
+-- quickly navigte in the current buffer
+local function go_to_next_file_in_dir(n)
     local current_file = vim.fn.expand('%:p')
     -- Get all files in the current directory
     local file_pattern = vim.fn.expand('%:h')
-    if type(file_pattern) == 'string[]' then
+    if type(file_pattern) ~= 'string' then
       return
     end
-    local files_unsorted = vim.fn.globpath(file_pattern, '*', false, true)
 
-    if type(files_unsorted) == 'string' then
-        -- If globpath returns a string array (unlikely with these arguments), return
-        files_unsorted = {files_unsorted}
+    local files_unsorted = {}
+    local siblings = vim.fn.globpath(file_pattern, '*', false, true)
+    for _, sibling in ipairs(siblings) do
+      if vim.fn.isdirectory(sibling) == 0 then
+        table.insert(files_unsorted, sibling)
+      end
+    end
+
+    -- if current file is an unsaves swapfile, add it to files_unsorted
+    if vim.loop.fs_stat(current_file) == nil then
+      table.insert(files_unsorted, current_file)
     end
 
     -- Sort the files alphabetically
@@ -164,17 +159,26 @@ local function goToNextFileInDir()
     local next_file_index = nil
     for i, file in ipairs(files) do
         if file == current_file then
-            print(file)
-            next_file_index = (i % #files) + 1
+            next_file_index = (i+n-1) % #files + 1
             break
         end
     end
-    print(next_file_index)
 
     if next_file_index then
         -- Edit the next file
         vim.cmd('edit ' .. vim.fn.fnameescape(files[next_file_index]))
     end
 end
+local function go_to_next_file_in_dir_wrapper()
+    go_to_next_file_in_dir(1)
+end
+local function go_to_prev_file_in_dir_wrapper()
+    go_to_next_file_in_dir(-1)
+end
 
-vim.api.nvim_create_user_command('NextFile', goToNextFileInDir, {})
+vim.api.nvim_create_user_command('NextFile', go_to_next_file_in_dir_wrapper, {})
+vim.api.nvim_create_user_command('PrevFile', go_to_prev_file_in_dir_wrapper, {})
+vim.api.nvim_set_keymap('n', '<Leader>]', '<cmd>NextFile<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<Leader>[', '<cmd>PrevFile<CR>', { noremap = true, silent = true })
+
+vim.o.scrolloff = 999

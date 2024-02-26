@@ -15,6 +15,7 @@ M.treesitter = {
     "svelte",
     "tsx",
     "c",
+    "php",
     "markdown",
     "markdown_inline",
   },
@@ -39,6 +40,10 @@ M.mason = {
     "svelte-language-server",
     "deno",
     "prettier",
+
+    -- php stuff
+   "intelephense",
+   "twig",
 
     -- c/cpp stuff
     "clangd",

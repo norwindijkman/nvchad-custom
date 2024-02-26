@@ -10,8 +10,11 @@ M.override = {
     italic = true,
   },
   Visual = {
-    bg = "#f2f2f2",
-    fg = "#000000",
+    bg = "#453b4a",
+    fg = "#FFFFFF",
+  },
+  Normal = {
+    bg = "#000000",
   },
 }
 

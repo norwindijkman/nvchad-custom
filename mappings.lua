@@ -1,6 +1,14 @@
 ---@type MappingsTable
 local M = {}
 
+M.nvimtree = {
+  n = {
+    -- close
+    ["<C-n>"] = { "<cmd> NvimTreeClose <CR>", "Close nvimtree" },
+  },
+}
+
+
 M.general = {
   n = {
     [";"] = { ":", "enter command mode", opts = { nowait = true } },
@@ -12,6 +20,7 @@ M.general = {
       end,
       "formatting",
     },
+
 
     -- tabufline commands
     ["<leader>X"] = {
