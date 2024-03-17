@@ -29,6 +29,11 @@ local plugins = {
     opts = overrides.nvimtree,
   },
 
+  {
+    "lewis6991/gitsigns.nvim",
+    opts = overrides.gitsigns,
+  },
+
   -- Install a plugin
   -- {
   --   "max397574/better-escape.nvim",

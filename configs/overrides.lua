@@ -4,6 +4,17 @@ M.blankline = {
   indentLine_enabled = 0,
 }
 
+M.gitsigns = {
+  signs = {
+    add = { text = "󰙴" },
+    change = { text = "󰏫" },
+    delete = { text = "-" },
+    topdelete = { text = "‾" },
+    changedelete = { text = "~" },
+    untracked = { text = "󰙴" },
+  },
+}
+
 M.treesitter = {
   ensure_installed = {
     "vim",
@@ -18,6 +29,7 @@ M.treesitter = {
     "php",
     "markdown",
     "markdown_inline",
+    "dart"
   },
   indent = {
     enable = true,
@@ -56,13 +68,28 @@ M.nvimtree = {
   git = {
     enable = true,
   },
-
+  actions = {
+    open_file = {
+      quit_on_open = true,
+    },
+  },
   renderer = {
     highlight_git = true,
     icons = {
       show = {
         git = true,
       },
+      glyphs = {
+        git = {
+          unstaged = "󰏫",
+          staged = "✓",
+          unmerged = "",
+          renamed = "󰏫",
+          untracked = "󰙴",
+          deleted = "",
+          ignored = "◌"
+        }
+      }
     },
   },
 }

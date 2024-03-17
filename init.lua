@@ -14,6 +14,14 @@ function ToggleWrap()
 end
 vim.api.nvim_set_keymap("n", "<leader>l", ":lua ToggleWrap()<CR>", { noremap = true, silent = true })
 vim.g.indent_blankline_char = ""
+
+local comment_fg =  vim.api.nvim_get_hl(0, { name = 'Comment' }).fg
+if comment_fg then
+    local hex_color = '#26282b' -- string.format("#%06x", comment_fg)
+    vim.api.nvim_set_hl(0, 'GitSignsAdd', { fg = hex_color })
+    vim.api.nvim_set_hl(0, 'GitSignsChange', { fg = hex_color })
+    vim.api.nvim_set_hl(0, 'GitSignsDelete', { fg = hex_color })
+end
 -- vim.cmd([[IndentBlanklineRefresh]])
 
 -- Turn line numbers off
