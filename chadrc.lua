@@ -13,6 +13,15 @@ M.ui = {
   tabufline = {
     lazyload = false
   },
+  statusline = {
+    theme = "minimal",
+    overriden_modules = function(modules)
+      table.remove(modules,11)
+      table.remove(modules,10)
+      table.remove(modules,1)
+    end,
+
+  }
 }
 
 M.plugins = "custom.plugins"
